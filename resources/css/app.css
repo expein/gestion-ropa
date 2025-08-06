@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    /* Colores principales */
+    --color-primary: #FFD6E0;    /* Rosa pastel suave */
+    --color-secondary: #E2D1F9;  /* Lila claro */
+    --color-tertiary: #C7F5D9;   /* Verde menta */
+    --color-quaternary: #FFF9E6; /* Crema */
+
+    /* Colores auxiliares */
+    --color-peach: #FFE8D4;      /* Melocotón */
+    --color-sky: #D4F1F9;       /* Azul cielo */
+    --color-gray-pastel: #F5F5F5; /* Gris muy claro */
+    --color-text: #6B7280;       /* Gris para texto */
+}
+
