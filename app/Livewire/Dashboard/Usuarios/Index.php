@@ -21,6 +21,8 @@ class Index extends Component
     public $editingUserId = null;
     public $isEditing = false;
 
+    protected $listeners = ['usuario-created' => '$refresh'];
+
     protected $rules = [
         'name' => 'required|min:3',
         'email' => 'required|email|unique:users,email',
@@ -34,22 +36,6 @@ class Index extends Component
             'users' => User::with('roles')->paginate(10),
             'roles' => Role::all()
         ]);
-    }
-
-    public function create()
-    {
-        $this->validate();
-
-        $user = User::create([
-            'name' => $this->name,
-            'email' => $this->email,
-            'password' => Hash::make($this->password)
-        ]);
-
-        $user->assignRole($this->role);
-
-        $this->reset(['name', 'email', 'password', 'role']);
-        session()->flash('message', 'Usuario creado exitosamente.');
     }
 
     public function edit($userId)

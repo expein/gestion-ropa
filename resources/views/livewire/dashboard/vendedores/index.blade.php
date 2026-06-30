@@ -5,16 +5,30 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="overflow-hidden">
                 <div class="p-6 lg:p-8">
-                    <!-- Header con título y botón de crear -->
                     <div class="sm:flex sm:items-center sm:justify-between mb-6">
                         <div class="sm:flex-auto">
                             <h3 class="text-base font-semibold leading-6 text-gray-900">Listado de Vendedores</h3>
                             <p class="mt-2 text-sm text-gray-700">Gestiona los vendedores del sistema</p>
                         </div>
-                        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                            <livewire:dashboard.vendedores.create />
-                        </div>
+                        @if(!$vendedores->isEmpty())
+                            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                                <livewire:dashboard.vendedores.create />
+                            </div>
+                        @endif
                     </div>
+
+                    <!-- Alertas de éxito y error -->
+                    @if (session()->has('error'))
+                        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <span class="block sm:inline">{{ session('error') }}</span>
+                            <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <title>Close</title>
+                                    <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                                </svg>
+                            </span>
+                        </div>
+                    @endif
 
                     @if($vendedores->isEmpty())
                         <!-- Mensaje cuando no hay vendedores -->
@@ -86,11 +100,15 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div class="flex justify-end space-x-2">
-                                                    <button type="button" class="text-indigo-600 hover:text-indigo-900">
-                                                        Editar
+                                                    <button type="button" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50" title="Editar">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                        </svg>
                                                     </button>
-                                                    <button type="button" class="text-red-600 hover:text-red-900">
-                                                        Eliminar
+                                                    <button wire:click="confirmDelete({{ $vendedor->id }})" type="button" class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50" title="Eliminar">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                        </svg>
                                                     </button>
                                                 </div>
                                             </td>
@@ -109,4 +127,27 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <x-alert-modal 
+        :show="$showConfirmModal"
+        type="warning"
+        title="Confirmar Eliminación"
+        message="¿Está seguro de que desea eliminar este vendedor? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmAction="delete"
+        closeAction="closeConfirmModal"
+        :confirmButtonClass="'bg-red-600 hover:bg-red-700 focus:ring-red-500'"
+    />
+
+    <!-- Modal de Éxito -->
+    <x-alert-modal 
+        :show="$showSuccessModal"
+        type="success"
+        title="Éxito"
+        message="Vendedor eliminado exitosamente."
+        confirmText="Aceptar"
+        closeAction="closeSuccessModal"
+    />
 </div>

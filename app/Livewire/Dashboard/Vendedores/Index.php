@@ -16,6 +16,9 @@ class Index extends Component
 
     public $search = '';
     public $perPage = 10;
+    public $showConfirmModal = false;
+    public $showSuccessModal = false;
+    public $vendedorToDelete = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -27,6 +30,46 @@ class Index extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function confirmDelete($vendedorId)
+    {
+        $this->vendedorToDelete = $vendedorId;
+        $this->showConfirmModal = true;
+    }
+
+    public function closeSuccessModal()
+    {
+        $this->showSuccessModal = false;
+    }
+
+    public function closeConfirmModal()
+    {
+        $this->showConfirmModal = false;
+        $this->vendedorToDelete = null;
+    }
+
+    public function delete()
+    {
+        try {
+            $vendedor = Vendedor::findOrFail($this->vendedorToDelete);
+            $user = $vendedor->user;
+            
+            // Eliminar el vendedor primero
+            $vendedor->delete();
+            
+            // Eliminar el usuario
+            $user->delete();
+            
+            $this->showConfirmModal = false;
+            $this->vendedorToDelete = null;
+            $this->showSuccessModal = true;
+            
+        } catch (\Exception $e) {
+            $this->showConfirmModal = false;
+            $this->vendedorToDelete = null;
+            session()->flash('error', 'Error al eliminar el vendedor: ' . $e->getMessage());
+        }
     }
 
     public function render()

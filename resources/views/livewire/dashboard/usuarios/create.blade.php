@@ -3,7 +3,7 @@
         <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Nuevo Vendedor
+        Nuevo Usuario
     </button>
 
     <div x-data="{ show: @entangle('showModal') }" 
@@ -46,7 +46,7 @@
                         <div class="sm:flex sm:items-start">
                             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-                                    Crear Nuevo Vendedor
+                                    Crear Nuevo Usuario
                                 </h3>
 
                                 <div class="grid grid-cols-1 gap-4">
@@ -99,16 +99,34 @@
                                     </div>
 
                                     <div>
-                                        <label for="tasa_comision" class="block text-sm font-medium text-gray-700">
-                                            Tasa de Comisión (%) <span class="text-red-500">*</span>
+                                        <label for="role" class="block text-sm font-medium text-gray-700">
+                                            Rol <span class="text-red-500">*</span>
                                         </label>
-                                        <input type="number" step="0.01" id="tasa_comision" wire:model.live="tasa_comision" 
+                                        <select id="role" wire:model.live="role" 
                                             class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 sm:text-sm
-                                            @error('tasa_comision') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500
-                                            @else border-gray-300 focus:border-indigo-500 @enderror"
-                                            placeholder="0.00">
-                                        @error('tasa_comision') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                                            @error('role') border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500
+                                            @else border-gray-300 focus:border-indigo-500 @enderror">
+                                            <option value="">Seleccione un rol</option>
+                                            @foreach($roles as $role)
+                                                <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('role') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                                     </div>
+
+                                    @if($role == 'vendedor')
+                                        <div>
+                                            <label for="tasa_comision" class="block text-sm font-medium text-gray-700">
+                                                Tasa de Comisión (%) <span class="text-red-500">*</span>
+                                            </label>
+                                            <input type="number" step="0.01" id="tasa_comision" wire:model.live="tasa_comision" 
+                                                class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 sm:text-sm
+                                                @error('tasa_comision') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500
+                                                @else border-gray-300 focus:border-indigo-500 @enderror"
+                                                placeholder="0.00">
+                                            @error('tasa_comision') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -126,14 +144,4 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal de Alerta -->
-    <x-alert-modal 
-        :show="$showAlertModal"
-        :type="$alertType"
-        :title="$alertType === 'success' ? 'Éxito' : 'Error'"
-        :message="$alertMessage"
-        confirmText="Aceptar"
-        closeAction="closeAlertModal"
-    />
 </div> 

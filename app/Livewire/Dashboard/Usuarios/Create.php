@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Livewire\Dashboard\Vendedores;
+namespace App\Livewire\Dashboard\Usuarios;
 
-use App\Models\Vendedor;
 use App\Models\User;
+use App\Models\Vendedor;
 use Livewire\Component;
+use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 
 class Create extends Component
@@ -13,17 +14,16 @@ class Create extends Component
     public $email;
     public $password;
     public $password_confirmation;
+    public $role;
     public $tasa_comision;
     public $showModal = false;
-    public $showAlertModal = false;
-    public $alertMessage = '';
-    public $alertType = 'success'; // 'success' o 'error'
 
     protected $rules = [
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users',
         'password' => 'required|string|min:8|confirmed',
-        'tasa_comision' => 'required|numeric|between:0,100',
+        'role' => 'required|exists:roles,name',
+        'tasa_comision' => 'required_if:role,vendedor|numeric|between:0,100',
     ];
 
     protected $messages = [
@@ -34,7 +34,9 @@ class Create extends Component
         'password.required' => 'La contraseña es obligatoria.',
         'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         'password.confirmed' => 'Las contraseñas no coinciden.',
-        'tasa_comision.required' => 'La tasa de comisión es obligatoria.',
+        'role.required' => 'El rol es obligatorio.',
+        'role.exists' => 'El rol seleccionado no es válido.',
+        'tasa_comision.required_if' => 'La tasa de comisión es obligatoria para vendedores.',
         'tasa_comision.numeric' => 'La tasa de comisión debe ser un número.',
         'tasa_comision.between' => 'La tasa de comisión debe estar entre 0 y 100.',
     ];
@@ -42,7 +44,7 @@ class Create extends Component
     public function updated($field)
     {
         // Validaciones rápidas sin consultas a BD para campos simples
-        if (in_array($field, ['name', 'password', 'tasa_comision'])) {
+        if (in_array($field, ['name', 'password', 'role'])) {
             $this->validateOnly($field);
         }
         
@@ -55,6 +57,20 @@ class Create extends Component
         if ($field === 'password_confirmation' && $this->password) {
             $this->validateOnly('password');
         }
+
+        // Validación para tasa de comisión cuando el rol es vendedor
+        if ($field === 'tasa_comision' && $this->role === 'vendedor') {
+            $this->validateOnly('tasa_comision');
+        }
+    }
+
+    public function updatedRole()
+    {
+        $this->validateOnly('role');
+        // Limpiar tasa de comisión si no es vendedor
+        if ($this->role !== 'vendedor') {
+            $this->tasa_comision = '';
+        }
     }
 
     public function mount()
@@ -64,59 +80,42 @@ class Create extends Component
 
     public function resetForm()
     {
-        $this->reset(['name', 'email', 'password', 'password_confirmation', 'tasa_comision']);
+        $this->reset(['name', 'email', 'password', 'password_confirmation', 'role', 'tasa_comision']);
         $this->resetValidation();
-    }
-
-    public function closeAlertModal()
-    {
-        $this->showAlertModal = false;
     }
 
     public function save()
     {
-        try {
-            $this->validate();
+        $this->validate();
 
-            // Crear el usuario
-            $user = User::create([
-                'name' => $this->name,
-                'email' => $this->email,
-                'password' => Hash::make($this->password),
-            ]);
+        // Crear el usuario
+        $user = User::create([
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => Hash::make($this->password),
+        ]);
 
-            // Asignar el rol de vendedor
-            $user->assignRole('vendedor');
+        // Asignar el rol
+        $user->assignRole($this->role);
 
-            // Crear el vendedor
+        // Si es vendedor, crear el registro de vendedor
+        if ($this->role === 'vendedor') {
             Vendedor::create([
                 'user_id' => $user->id,
                 'tasa_comision' => $this->tasa_comision,
                 'comision_total' => 0
             ]);
-
-            $this->dispatch('vendedor-created');
-            $this->resetForm();
-            $this->showModal = false;
-            
-            // Solo mostrar alerta de éxito
-            $this->alertMessage = 'Vendedor creado exitosamente.';
-            $this->alertType = 'success';
-            $this->showAlertModal = true;
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Para errores de validación, no mostrar modal, solo usar las validaciones visuales
-            throw $e;
-        } catch (\Exception $e) {
-            // Solo mostrar alerta modal para errores del sistema, no de validación
-            $this->alertMessage = 'Error al crear el vendedor: ' . $e->getMessage();
-            $this->alertType = 'error';
-            $this->showAlertModal = true;
         }
+
+        $this->dispatch('usuario-created');
+        $this->resetForm();
+        $this->showModal = false;
     }
 
     public function render()
     {
-        return view('livewire.dashboard.vendedores.create');
+        return view('livewire.dashboard.usuarios.create', [
+            'roles' => Role::all()
+        ]);
     }
 } 

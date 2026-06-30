@@ -11,16 +11,19 @@ class Cliente extends Model
 
     protected $fillable = [
         'nombre',
-        'cedula',
+        'tipo_documento',
+        'numero_documento',
+        'email',
+        'telefono',
         'direccion',
         'zona',
         'vendedor_id',
-        'telefono'
+        'limite_credito'
     ];
 
     public function vendedor()
     {
-        return $this->belongsTo(User::class, 'vendedor_id');
+        return $this->belongsTo(Vendedor::class, 'vendedor_id');
     }
 
     public function facturas()
